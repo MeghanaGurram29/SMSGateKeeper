@@ -11,6 +11,8 @@ builder.Services.AddSwaggerGen();
 // Bind RateLimiterSettings from appsettings.json
 builder.Services.Configure<RateLimiterSettings>(builder.Configuration.GetSection("RateLimiterSettings"));
 
+builder.Services.AddHostedService<RateLimiterCleanupService>();
+
 // Register SmsRateLimiter as a singleton
 builder.Services.AddSingleton<SmsRateLimiter>(sp =>
 {

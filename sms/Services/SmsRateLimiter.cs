@@ -32,7 +32,7 @@ public class SmsRateLimiter
         DateTime currentTime = DateTime.UtcNow;
 
         //Remove old messages from the queue(older than 1 second)
-        while (msgTimesDict.Count > 0 && (currentTime - msgTimesDict.Peek()).TotalSeconds >= 1)
+        while (msgTimesDict.Count > 0 && (currentTime - msgTimesDict.Peek()).TotalSeconds >= _settings.InActiveActTimeoutHours)
         {
             msgTimesDict.Dequeue();
         }
@@ -54,4 +54,34 @@ public class SmsRateLimiter
         msgTimesDict.Enqueue(currentTime);
         return Result.Ok();
     }
+
+    public void CleanupOldEntries()
+    {
+        DateTime currentTime = DateTime.UtcNow;
+
+        // Iterate through accounts
+        foreach (var account in _accountMsgDict.Keys.ToList())
+        {
+            var businessNumMsgDict = _accountMsgDict[account];
+
+            // Iterate through business numbers
+            foreach (var businessNumber in businessNumMsgDict.Keys.ToList())
+            {
+                var msgTimesDict = businessNumMsgDict[businessNumber];
+
+                // Remove business number if it has no messages in the past hour
+                if (msgTimesDict.Count == 0 || (currentTime - msgTimesDict.Last()).TotalHours >= 1)
+                {
+                    businessNumMsgDict.Remove(businessNumber);
+                }
+            }
+
+            // Remove account if it has no active business numbers
+            if (businessNumMsgDict.Count == 0)
+            {
+                _accountMsgDict.Remove(account);
+            }
+        }
+    }
+
 }

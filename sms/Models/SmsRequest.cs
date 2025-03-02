@@ -29,6 +29,7 @@
         {
             public int MaxMessagesPerNumber { get; set; }
             public int MaxTotalMessagesForAccount { get; set; }
+            public int InActiveActTimeoutHours { get; set; }
         }
     }
 }
